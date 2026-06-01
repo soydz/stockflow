@@ -1,0 +1,79 @@
+name: CI and CD on Vercel
+on:
+  push:
+    branches: [main]
+
+jobs:
+  # CI
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+         version: '10'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '25'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Vercel CLI
+        run: pnpm add -g vercel
+
+      - name: Pull Vercel environment variables from GitHub Secrets
+        run: vercel pull --yes --environment=production --token ${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Build project artifacts
+        run: vercel build --prod --token ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Upload Vercel artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: vercel-artifacts
+          path: |
+            .vercel
+            .next
+          include-hidden-files: true
+          retention-days: 1
+
+  # CD
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+
+      - name: Download Vercel artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: vercel-artifacts
+          path: .
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+         version: '10'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Install Vercel CLI
+        run: pnpm add -g vercel
+
+      - name: Deploy Project Artifacts to Vercel
+        run: vercel deploy --prebuilt --prod --token ${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
