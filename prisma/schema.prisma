@@ -1,0 +1,118 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+// panel administrativo de inventario y movimientos
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum MovementType {
+  ENTRADA
+  SALIDA
+}
+
+enum OrderStatus {
+  PENDING      // El pedido fue iniciado, pero el pago no se ha confirmado.
+  PAID         // El pago ha sido confirmado.
+  PROCESSING   // El pedido está siendo preparado para el envío.
+  SHIPPED      // El pedido ha sido enviado.
+  DELIVERED    // El pedido ha sido entregado.
+  CANCELLED    // El pedido fue cancelado.
+  REFUNDED     // El pedido fue reembolsado.
+}
+
+model User {
+  id String @id @default(cuid())
+  name String
+  avatar String?
+  email String @unique
+  password String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  enabled Boolean @default(true)
+  deleted Boolean @default(false)
+  role Role @default(USER)
+  
+  productsCreated Product[] @relation("ProductCreator")
+
+  transactionsMade Transaction[] @relation("TransactionResponsible")
+
+  ordersDispatched Order[] @relation("OrderDispatcher")
+}
+
+model Product {
+  id String @id @default(cuid())
+  name String
+  initialStock Int @default(0)
+  stock Int @default(0)
+  price Decimal @default(0)
+  description String @default("")
+  image String @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  enabled Boolean @default(true)
+  deleted Boolean @default(false)
+
+  creatorId String
+  creator User @relation("ProductCreator", fields: [creatorId], references: [id])
+
+  transactions Transaction[]
+
+  orders Order[]
+}
+
+model Transaction {
+  id String @id @default(cuid())
+  type MovementType @default(ENTRADA)
+  quantity Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  enabled Boolean @default(true)
+  deleted Boolean @default(false)
+
+  productId String
+  product Product @relation(fields: [productId], references: [id])
+
+  responsibleId String
+  responsible User @relation("TransactionResponsible", fields: [responsibleId], references: [id])
+}
+
+model Order {
+  id String @id @default(cuid())
+  quantity Int
+  status OrderStatus @default(PENDING)
+  totalAmount Decimal
+  shippingAmount Decimal
+  shippingNotes String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  paymentDetails String?
+  customerName String
+  customerEmail String
+  customerAddress String
+  customerPhone String
+  customerCity String
+  customerRegion String
+
+  unitPrice Decimal
+  productName String
+  productId String
+  product Product @relation(fields: [productId], references: [id])
+
+  responsibleId String?
+  responsible User? @relation("OrderDispatcher", fields: [responsibleId], references: [id])
+}
+
