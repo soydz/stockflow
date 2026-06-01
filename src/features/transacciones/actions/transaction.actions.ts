@@ -4,6 +4,7 @@ import prisma from "@/shared/lib/prisma";
 import { TransactionFormData, transactionFormSchema, TransactionResponse } from "../schemas/transaction.schema";
 import { getSession } from "@/shared/lib/auth";
 import { revalidatePath } from "next/cache";
+import { Prisma } from "@prisma/client";
 
 interface GetTransactionsByProductIdResponse {
     success: boolean;
@@ -58,7 +59,7 @@ export async function createTransactionAction(data: TransactionFormData) {
 
     try {
         // transacción atómica: crear transacción y descontar cantidad de producto
-        await prisma.$transaction(async (tx) => {
+        await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
             // si es salida, verifica stock suficiente
             if (data.type === "SALIDA") {
                 const product = await tx.product.findUnique({

@@ -5,6 +5,7 @@ import { Order, OrderFormData, orderResponseSchema, orderSchema } from "../schem
 import { revalidatePath } from "next/cache";
 import z from "zod";
 import { getSession } from "@/shared/lib/auth";
+import { Prisma } from "@prisma/client";
 
 export async function proccessCheckoutAction(data: OrderFormData) {
     return await createOrderAction(data);
@@ -24,7 +25,7 @@ export async function createOrderAction(order: OrderFormData) {
 
     try {
         // transacción atómica
-        await prisma.$transaction(async (tx) => {
+        await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
 
             // valida stock disponible
             const product = await tx.product.findUnique({
