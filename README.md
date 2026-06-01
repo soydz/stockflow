@@ -2,6 +2,8 @@
 
 Sistema web integral para administrar productos, registrar movimientos de inventario, procesar pedidos de clientes y monitorear el stock en tiempo real, incluyendo una tienda pública y un panel administrativo con control de acceso por roles.
 
+- https://duban-zuluaga-gestion-pedidos.vercel.app/
+
 ---
 
 ## 🚀 Primeros pasos
