@@ -71,7 +71,9 @@ Abre [http://localhost:3000](http://localhost:3000).
 - **Pago simulado**: formulario de tarjeta de crédito con proceso asíncrono de 2 segundos y generación de ID de transacción.
 - **Creación atómica**: la orden se crea validando stock disponible dentro de `prisma.$transaction`.
 
-![checkout pago](/public/images/checkout-pago.png)
+![checkout pago - datos usuario](/public/images/checkout-pago-1.png)
+![checkout pago - datos pago](/public/images/checkout-pago-2.png)
+![checkout pago - confirmación pago](/public/images/checkout-pago-3.png)
 
 
 ### Gestión de pedidos (`/pedidos`)
